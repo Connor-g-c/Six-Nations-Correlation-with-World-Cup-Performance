@@ -3,7 +3,7 @@
 
 # # Relationship between Six Nations and World Cup Performances
 
-# In[964]:
+# In[1]:
 
 
 #Install relevent packages for scraping
@@ -11,7 +11,7 @@ get_ipython().run_line_magic('pip', 'install beautifulsoup4 requests selenium bs
 get_ipython().run_line_magic('pip', 'install --upgrade selenium webdriver-manager')
 
 
-# In[965]:
+# In[2]:
 
 
 #Install relevent packages for analysis and visualisation
@@ -21,15 +21,16 @@ get_ipython().run_line_magic('pip', 'install plotly --upgrade')
 
 # ### World Cup Top 3 Data Collection
 
-# In[966]:
+# In[3]:
 
 
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import numpy as np
 
 
-# In[967]:
+# In[4]:
 
 
 def parse_html_from_url(url):
@@ -40,7 +41,7 @@ def parse_html_from_url(url):
     return soup
 
 
-# In[968]:
+# In[5]:
 
 
 def extract_data_by_section(soup, section_id):
@@ -57,7 +58,7 @@ def extract_data_by_section(soup, section_id):
     return pd.DataFrame()
 
 
-# In[969]:
+# In[6]:
 
 
 def extract_table_data(table):
@@ -86,7 +87,7 @@ def extract_table_data(table):
     return pd.DataFrame(data, columns=['Year', 'Champion', 'Runner-up', 'Third'])
 
 
-# In[970]:
+# In[7]:
 
 
 #URL of the Wikipedia page for the Rugby World Cup
@@ -99,7 +100,7 @@ print("World Cup Data:")
 print(World_Cup_Data)
 
 
-# In[971]:
+# In[8]:
 
 
 World_Cup_Data.to_csv('World_Cup_Data.csv', index=False)
@@ -107,13 +108,13 @@ World_Cup_Data.to_csv('World_Cup_Data.csv', index=False)
 
 # ### World Cup Quarterfinalists Data Collection
 
-# In[972]:
+# In[9]:
 
 
 import time
 
 
-# In[973]:
+# In[10]:
 
 
 #Function to extract top teams from each pool
@@ -134,7 +135,7 @@ def extract_top_teams(pool_df):
 world_cup_quarterfinalists = pd.DataFrame(columns=['Year', 'Country'])
 
 
-# In[974]:
+# In[11]:
 
 
 #Iterate through each year
@@ -169,13 +170,13 @@ for year in range(1987, 2024, 4):
         print(f"Error processing data for year {year}: {e}")
 
 
-# In[975]:
+# In[12]:
 
 
 print(world_cup_quarterfinalists)
 
 
-# In[976]:
+# In[13]:
 
 
 world_cup_quarterfinalists.to_csv('world_cup_quarterfinalists.csv', index=False)
@@ -183,7 +184,7 @@ world_cup_quarterfinalists.to_csv('world_cup_quarterfinalists.csv', index=False)
 
 # ### Six Nations Data Collection
 
-# In[977]:
+# In[14]:
 
 
 from selenium import webdriver
@@ -194,7 +195,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-# In[978]:
+# In[15]:
 
 
 def fetch_page(url):
@@ -205,7 +206,7 @@ def fetch_page(url):
     return driver
 
 
-# In[979]:
+# In[16]:
 
 
 def scrape_season_data(driver):
@@ -230,7 +231,7 @@ def scrape_season_data(driver):
         return None
 
 
-# In[980]:
+# In[17]:
 
 
 def compile_data(url):
@@ -262,7 +263,7 @@ def compile_data(url):
     return pd.DataFrame(results, columns=['Year', 'Rank', 'Team', 'Points', 'Scored Points'])
 
 
-# In[981]:
+# In[18]:
 
 
 main_url = 'https://www.livesport.com/en/rugby-union/europe/six-nations/archive/'
@@ -270,13 +271,13 @@ six_nations_data = compile_data(main_url)
 print(six_nations_data)
 
 
-# In[982]:
+# In[19]:
 
 
 print(six_nations_data.columns)
 
 
-# In[983]:
+# In[20]:
 
 
 #Expand 'Scored Points' column into two new columns
@@ -293,7 +294,7 @@ six_nations_data = six_nations_data.drop(columns=['Scored Points'])
 print(six_nations_data.head())
 
 
-# In[984]:
+# In[21]:
 
 
 six_nations_data.to_csv('Six_Nations_data.csv', index=False)
@@ -301,7 +302,14 @@ six_nations_data.to_csv('Six_Nations_data.csv', index=False)
 
 # ## Six Nations Data Analysis
 
-# In[985]:
+# In[22]:
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+# In[23]:
 
 
 #Converting 'Rank' to numeric
@@ -309,8 +317,8 @@ six_nations_data['Rank'] = pd.to_numeric(six_nations_data['Rank'], errors='coerc
 
 #Number of of individual top 3 finishes
 first_place_counts = six_nations_data[six_nations_data['Rank'] == 1].groupby('Team').size()
-second_place_counts = six_nations_data[six_nations_data['Rank'] == 2].groupby('Team').size().reindex(all_teams, fill_value=0)
-third_place_counts = six_nations_data[six_nations_data['Rank'] == 3].groupby('Team').size().reindex(all_teams, fill_value=0)
+second_place_counts = six_nations_data[six_nations_data['Rank'] == 2].groupby('Team').size()
+third_place_counts = six_nations_data[six_nations_data['Rank'] == 3].groupby('Team').size()
 
 #Average rank for each team
 average_rank = six_nations_data.groupby('Team')['Rank'].mean()
@@ -321,7 +329,7 @@ average_points_difference = six_nations_data.groupby('Team')['Points Difference'
 first_place_counts, average_rank.sort_values(), average_points_difference.sort_values(ascending=False)
 
 
-# In[986]:
+# In[24]:
 
 
 all_teams = six_nations_data['Team'].unique()
@@ -359,7 +367,7 @@ ax.legend()
 plt.show()
 
 
-# In[987]:
+# In[25]:
 
 
 #Define team colors for clarity
@@ -402,7 +410,7 @@ plt.xticks(rotation=45)
 plt.show()
 
 
-# In[988]:
+# In[26]:
 
 
 #Pivot data for heatmap
@@ -432,14 +440,7 @@ plt.show()
 
 # ## Investment Analysis
 
-# In[989]:
-
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-
-# In[990]:
+# In[27]:
 
 
 investment_data_path = '6_nations_teams_investments.csv'
@@ -448,7 +449,7 @@ investment_data = pd.read_csv(investment_data_path)
 print(investment_data)
 
 
-# In[991]:
+# In[28]:
 
 
 #Cleaning data
@@ -467,7 +468,7 @@ merged_investment_data = pd.merge(average_scores, average_investment, on='Team',
 print(merged_investment_data)
 
 
-# In[992]:
+# In[29]:
 
 
 import matplotlib.ticker as ticker
@@ -487,19 +488,20 @@ ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}M'.form
 plt.show()
 
 
-# In[993]:
+# In[30]:
 
 
 print(investment_data)
 
 
-# In[994]:
+# In[31]:
 
 
+merged_data_1 = pd.merge(six_nations_data, investment_data, on=['Year', 'Team'])
 print(merged_data_1)
 
 
-# In[995]:
+# In[32]:
 
 
 #Clean data
@@ -517,7 +519,7 @@ print("\nFinal Data with Expenditure per Point:\n")
 print(merged_data_1[['Year', 'Team', 'Points', 'Expenditure (£)', 'Expenditure per Point (£)']])
 
 
-# In[996]:
+# In[33]:
 
 
 #Define custom palette
@@ -550,15 +552,17 @@ plt.tight_layout()
 plt.show()
 
 
-# In[997]:
+# In[34]:
 
+
+from scipy.stats import pearsonr
 
 #Correlation for investment and total points 
 investment_correlation, _ = pearsonr(merged_data_1['Expenditure (£)'], merged_data_1['Points'])
 print("Correlation coefficient between expenditure and points:", investment_correlation)
 
 
-# In[998]:
+# In[35]:
 
 
 import plotly.graph_objects as go
@@ -663,7 +667,7 @@ fig.show()
 
 # ### World Cup Quarter Finalists (Top 8) Analysis
 
-# In[999]:
+# In[36]:
 
 
 #Filter the data to include only Six Nations teams
@@ -683,7 +687,7 @@ print(heatmap_data_quarters)
 
 # #### Visualisation of Quarterfinals Apperences of Six Nations Teams
 
-# In[1000]:
+# In[37]:
 
 
 #Create the heatmap
@@ -698,11 +702,11 @@ plt.tight_layout()
 plt.show()
 
 
-# In[1001]:
+# In[38]:
 
 
 #Reshape the dataFrame
-long_format = pd.melt(world_cup_data, id_vars='Year', value_vars=['Champion', 'Runner-up', 'Third'], var_name='Placement', value_name='Country')
+long_format = pd.melt(World_Cup_Data, id_vars='Year', value_vars=['Champion', 'Runner-up', 'Third'], var_name='Placement', value_name='Country')
 filtered_data = long_format[long_format['Country'].isin(six_nations_teams)]
 
 #Pivot table
@@ -717,7 +721,7 @@ for team in six_nations_teams:
 heatmap_data = heatmap_data_top3.loc[six_nations_teams]
 
 
-# In[1002]:
+# In[39]:
 
 
 #Create the heatmap
@@ -732,7 +736,7 @@ plt.tight_layout()
 plt.show()
 
 
-# In[1003]:
+# In[40]:
 
 
 #Sort the indices of the DataFrame
@@ -764,7 +768,7 @@ plt.show()
 
 # #### Correlation between Six Nations performance and reaching World Cup Quarterfinals 
 
-# In[1004]:
+# In[41]:
 
 
 #Reshape and Clean Data
@@ -792,7 +796,7 @@ print(f"The correlation between Six Nations points scored and reaching the World
 print(f"The correlation between Six Nations points conceded and reaching the World Cup quarter-finals is: {correlation_points_conceded:.3f}")
 
 
-# In[1005]:
+# In[42]:
 
 
 plt.figure(figsize=(10, 12))
@@ -822,7 +826,7 @@ plt.tight_layout()
 plt.show()
 
 
-# In[1006]:
+# In[43]:
 
 
 import statsmodels.api as sm
@@ -849,7 +853,7 @@ print("\nModel Summary for Points Conceded:")
 print(result_points_conceded.summary())
 
 
-# In[1007]:
+# In[44]:
 
 
 from sklearn.tree import DecisionTreeClassifier, plot_tree
@@ -878,7 +882,7 @@ for feature, name in zip(features, feature_names):
     plt.show()
 
 
-# In[1008]:
+# In[45]:
 
 
 #Create and fit the model using all features
@@ -894,17 +898,20 @@ plt.show()
 
 # ### Average performances in Six Nations to reach World Cup Quarterfinals and Top 3
 
-# In[1009]:
+# In[46]:
 
 
 #Average Total Points
 #Reshape world_cup_data to have a single 'Country' column for teams in top 3
-top3_teams = world_cup_data.melt(id_vars='Year', value_vars=['Champion', 'Runner-up', 'Third'], var_name='Position', value_name='Team')
+top3_teams = World_Cup_Data.melt(id_vars='Year', value_vars=['Champion', 'Runner-up', 'Third'], var_name='Position', value_name='Team')
 
 #Clean data
-six_nations_data['Team'] = six_nations_data['Team'].str.strip()
-top3_teams['Team'] = top3_teams['Team'].str.strip()
-world_cup_quarterfinalists['Country'] = world_cup_quarterfinalists['Country'].str.strip()
+six_nations_data['Year'] = six_nations_data['Year'].astype(int)
+six_nations_data['Team'] = six_nations_data['Team'].str.strip().astype(str)
+top3_teams['Year'] = top3_teams['Year'].astype(int)
+top3_teams['Team'] = top3_teams['Team'].str.strip().astype(str)
+world_cup_quarterfinalists['Year'] = world_cup_quarterfinalists['Year'].astype(int)
+world_cup_quarterfinalists['Country'] = world_cup_quarterfinalists['Country'].str.strip().astype(str)
 
 
 #Make merged dataframes
@@ -918,7 +925,7 @@ print(f"Average Six Nations points for top 3 positions in the World Cup: {averag
 print(f"Average Six Nations points for World Cup quarterfinals qualification: {average_points_quarterfinals}")
 
 
-# In[1010]:
+# In[47]:
 
 
 #Average Points Scored
@@ -930,7 +937,7 @@ print(f"Average Six Nations points for top 3 positions in the World Cup: {averag
 print(f"Average Six Nations points for World Cup quarterfinals qualification: {average_points_scored_quarterfinals}")
 
 
-# In[1011]:
+# In[48]:
 
 
 plt.figure(figsize=(14, 7))
@@ -945,7 +952,7 @@ plt.grid(True)
 plt.show()
 
 
-# In[1012]:
+# In[49]:
 
 
 plt.figure(figsize=(14, 7))
@@ -960,7 +967,7 @@ plt.grid(True)
 plt.show()
 
 
-# In[1013]:
+# In[50]:
 
 
 #Splitting the data due to Total Points scoring system change
@@ -984,11 +991,11 @@ average_points_top3_post_2017 = post_2017_top3_merge['Points'].mean()
 average_points_quarterfinals_post_2017 = post_2017_quarterfinals_merge['Points'].mean()
 
 
-# In[1014]:
+# In[51]:
 
 
 plt.figure(figsize=(14, 7))
-sns.lineplot(x='Year', y='Points', data=six_nations_data, hue='Team', palette=team_colors, marker='o')
+sns.lineplot(x='Year', y='Points', data=six_nations_data, hue='Team', palette=team_colours, marker='o')
 plt.axhline(y=average_points_quarterfinals_pre_2017, color='blue', linestyle='--', label='Avg Points for WC Quarterfinals Pre-2017')
 plt.axhline(y=average_points_top3_pre_2017, color='green', linestyle='--', label='Avg Points for WC Top 3 Pre-2017')
 plt.axhline(y=average_points_quarterfinals_post_2017, color='purple', linestyle='--', label='Avg Points for WC Quarterfinals Post-2017')
@@ -1003,7 +1010,7 @@ plt.show()
 
 # ### Correlation between Six Nations Winner and reaching World Cup Top 3
 
-# In[1015]:
+# In[52]:
 
 
 #Find the winners from each six nations
@@ -1011,7 +1018,7 @@ six_nations_winners = six_nations_data[six_nations_data['Rank'] == 1.0]
 print(six_nations_winners)
 
 
-# In[1016]:
+# In[53]:
 
 
 #Merge Six Nations winners with World Cup top 3 data
@@ -1023,7 +1030,7 @@ winners_top3_merge['Top_3_Finish'] = 1
 print(winners_top3_merge)
 
 
-# In[1017]:
+# In[54]:
 
 
 #Correlation Calculations
@@ -1043,7 +1050,7 @@ print("Correlation coefficient:", correlation)
 print("P-value:", p_value)
 
 
-# In[1018]:
+# In[55]:
 
 
 six_nations_winners['Non_Top_3_Finish'] = six_nations_winners['Top_3_Finish'].apply(lambda x: 1 if x == 0 else 0)
